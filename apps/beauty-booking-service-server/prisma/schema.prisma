@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Professional {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  firstName   String?
+  lastName    String?
+  experience  Int?
+  reviews     Review[]
+  portfolio   Portfolio? @relation(fields: [portfolioId], references: [id])
+  portfolioId String?
+  service     Service?   @relation(name: "ProfessionalsOnService", fields: [serviceId], references: [id])
+  serviceId   String?
+  services    Service[]  @relation(name: "ProfessionalOnServices")
+}
+
+model Portfolio {
+  id            String                @id @default(cuid())
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  images        EnumPortfolioImages[]
+  professionals Professional[]
+}
+
+model Review {
+  id             String        @id @default(cuid())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  comment        String?
+  rating         Int?
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  professionalId String?
+  user           User?         @relation(fields: [userId], references: [id])
+  userId         String?
+}
+
+model Service {
+  id             String         @id @default(cuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  name           String?
+  description    String?
+  price          Float?
+  professionals  Professional[] @relation(name: "ProfessionalsOnService")
+  professional   Professional?  @relation(name: "ProfessionalOnServices", fields: [professionalId], references: [id])
+  professionalId String?
+  booking        Booking?       @relation(name: "BookingOnServices", fields: [bookingId], references: [id])
+  bookingId      String?
+  bookings       Booking[]      @relation(name: "BookingsOnService")
+}
+
+model Booking {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  datetime  DateTime?
+  services  Service[] @relation(name: "BookingOnServices")
+  service   Service?  @relation(name: "BookingsOnService", fields: [serviceId], references: [id])
+  serviceId String?
+  user      User?     @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model User {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  firstName String?
+  lastName  String?
+  username  String    @unique
+  email     String?   @unique
+  password  String
+  roles     Json
+  reviews   Review[]
+  bookings  Booking[]
+}
+
+enum EnumPortfolioImages {
+  Option1
+}
